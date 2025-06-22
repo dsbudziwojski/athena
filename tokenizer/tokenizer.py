@@ -2,7 +2,7 @@ from tokenizers import Tokenizer, normalizers, trainers
 from tokenizers.models import BPE
 from tokenizers.pre_tokenizers import Whitespace
 from tokenizers.normalizers import NFD, StripAccents
-
+from utilities import json_files_iter
 
 class GeneralTokenizer(object):
     """
@@ -11,23 +11,23 @@ class GeneralTokenizer(object):
     tokenizer_type='default').
 
     Attributes:
-        _text_type (str): Input data format ('list' or 'file').
+        _text_type (str): Input data format ('list' or 'files').
         _tokenizer_type (str): Backend choice ('default' for custom, 'library' for BPE via HF).
         _model_type (str): Model architecture ('BPE').
         tokenizer (Tokenizer): HuggingFace Tokenizer instance when using library backend.
-        _trainer (BpeTrainer): Trainer for list-based BPE training (library only).
+        _trainer (BpeTrainer): Trainer for list- or file-based BPE training (library only).
     """
-    def __init__(self, text_type="file", tokenizer_type="library", model_type="BPE"):
+    def __init__(self, text_type="list", tokenizer_type="library", model_type="BPE"):
         """
         Initialize the GeneralTokenizer.
 
         Args:
-            text_type (str): Data source type ('list' for in-memory lists, 'file' for file-based input).
+            text_type (str): Data source type ('list' for in-memory lists, 'files' for JSON files).
             tokenizer_type (str): Which backend to use ('library' for HF BPE or 'default' as a stub).
-            model_type (str): Model architecture ('BPE' supported).
+            model_type (str): Model architecture ('BPE').
 
         Raises:
-            Exception: If tokenizer_type or model_type is unsupported.
+            Exception: If tokenizer_type, model_type, or text_type is unsupported.
         """
         if tokenizer_type not in ["default", "library"]:
             raise Exception("Invalid tokenizer")
@@ -41,14 +41,12 @@ class GeneralTokenizer(object):
         if tokenizer_type == "library":
             self.tokenizer = Tokenizer(BPE(unk_token="[UNK]"))
             self.tokenizer.pre_tokenizer = Whitespace()
-            if text_type == "list":
+            if text_type == "list" or text_type == "files":
                 self._trainer = trainers.BpeTrainer(
                     vocab_size=30_000,
                     min_frequency=2,
                     special_tokens=["[PAD]", "[UNK]", "[CLS]", "[SEP]", "[MASK]"],
                 )
-            elif text_type == "file":
-                raise Exception("text_type Error: file not yet supported")
             else:
                 raise Exception("Invalid text_type")
 
@@ -57,17 +55,17 @@ class GeneralTokenizer(object):
         Train the tokenizer on provided data using the configured backend.
 
         Args:
-            data (Iterable[str]): List of text strings for training when text_type='list'.
+            data (Iterable[str]): Text strings if text_type='list', or file paths if text_type='files'.
 
         Raises:
-            Exception: If file-based training is selected (not supported) or backend stub.
+            Exception: If invalid text_type or non-library backend.
         """
         print("TRAINING TOKENIZER STARTING")
         if self._tokenizer_type == "library":
             if self._text_type == "list":
                 self.tokenizer.train_from_iterator(data, self._trainer)
-            elif self._text_type == "file":
-                raise Exception("text_type Error: file not yet supported")
+            elif self._text_type == "files":
+                self.tokenizer.train_from_iterator(json_files_iter(data), self._trainer)
             else:
                 raise Exception("Invalid text_type")
         else:
@@ -81,7 +79,7 @@ class GeneralTokenizer(object):
             test_string (str): Sample string to encode and decode.
 
         Raises:
-            Exception: If backend stub or invalid text_type.
+            Exception: If non-library backend or invalid text_type.
         """
         print("TESTING TOKENIZER")
         if self._text_type == "":
