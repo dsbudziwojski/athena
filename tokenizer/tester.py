@@ -1,4 +1,4 @@
-from tokenizer import tokenize
+from tokenizer import GeneralTokenizer
 
 dummy_data = [
     (
@@ -55,4 +55,6 @@ dummy_data = [
 
 
 only_data = [t[2] for t in dummy_data]
-tokenize(only_data, text_type="list", tokenizer="library", model="BPE")
+t = GeneralTokenizer(text_type="list", tokenizer_type="library", model_type="BPE")
+t.train_tokenizer(only_data)
+t.test_tokenizer("Hello Python")
