@@ -54,7 +54,14 @@ dummy_data = [
 ]
 
 
+print("CHECK list text_type")
 only_data = [t[2] for t in dummy_data]
 t = GeneralTokenizer(text_type="list", tokenizer_type="library", model_type="BPE")
 t.train_tokenizer(only_data)
+t.test_tokenizer("Hello Python")
+
+print("CHECK files text_types")
+files = ["./dummy-data/corpus-test.0.json", "./dummy-data/corpus-test.1.json"]
+t = GeneralTokenizer(text_type="files", tokenizer_type="library", model_type="BPE")
+t.train_tokenizer(files)
 t.test_tokenizer("Hello Python")

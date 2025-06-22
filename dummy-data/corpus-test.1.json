@@ -1,0 +1,52 @@
+[
+  {
+    "id": "wiki-11",
+    "summary": "JSON is a lightweight, text-based data interchange format derived from JavaScript syntax.",
+    "text": "JSON (JavaScript Object Notation) represents structured data as key–value pairs and ordered lists. It is language-independent and widely used for transmitting data between servers and web applications. Its simplicity and human-readability make it a popular choice for configuration files and RESTful API payloads."
+  },
+  {
+    "id": "wiki-12",
+    "summary": "Docker is a platform for containerizing applications to ensure consistency across environments.",
+    "text": "Docker uses OS-level virtualization to package applications and their dependencies into containers. Containers share the host OS kernel but run in isolated user spaces, making them lightweight compared to virtual machines. Docker images can be versioned and shared via Docker Hub, facilitating continuous integration and deployment workflows."
+  },
+  {
+    "id": "wiki-13",
+    "summary": "Kubernetes is an open-source system for automating deployment, scaling, and management of containerized applications.",
+    "text": "Originally developed by Google, Kubernetes organizes containers into pods and manages them across clusters of nodes. It provides features like self-healing, load balancing, and automated rollouts and rollbacks. Users define desired state via declarative YAML manifests, and Kubernetes continuously works to match the actual state to the desired state."
+  },
+  {
+    "id": "wiki-14",
+    "summary": "A RESTful API is an application interface that adheres to REST architectural principles over HTTP.",
+    "text": "REST (Representational State Transfer) defines constraints such as statelessness, client–server separation, and a uniform interface. Resources are identified by URLs and manipulated using standard HTTP methods like GET, POST, PUT, and DELETE. JSON is commonly used as the payload format, enabling interoperability across diverse platforms."
+  },
+  {
+    "id": "wiki-15",
+    "summary": "GraphQL is a query language and runtime for APIs that enables clients to request exactly the data they need.",
+    "text": "Developed by Facebook, GraphQL allows clients to define the structure of the response in a single POST request. It supports nested queries, real-time updates via subscriptions, and strong type-checking through a schema. Because clients can avoid over- or under-fetching, GraphQL queries often reduce network usage and improve performance."
+  },
+  {
+    "id": "wiki-16",
+    "summary": "Git is a distributed version control system for tracking changes in source code during software development.",
+    "text": "Created by Linus Torvalds in 2005, Git stores snapshots of a project’s files in a commit graph. Developers can clone entire repositories, work locally, and merge changes through branches and pull requests. Its efficiency, robustness, and support for non-linear workflows have made Git the de facto standard for version control."
+  },
+  {
+    "id": "wiki-17",
+    "summary": "Markdown is a lightweight markup language for creating formatted text using a plain-text editor.",
+    "text": "John Gruber and Aaron Swartz developed Markdown to be readable as-is and convert easily to HTML. It supports headings, lists, links, images, and code blocks with simple syntax. Many platforms, from GitHub to static site generators, use Markdown for documentation and content authoring."
+  },
+  {
+    "id": "wiki-18",
+    "summary": "A Convolutional Neural Network (CNN) is a deep learning model particularly effective for processing grid-like data such as images.",
+    "text": "CNNs apply convolutional layers to extract hierarchical features from input data, using learnable filters. Pooling layers reduce spatial dimensions, while fully connected layers perform classification or regression. They power applications in computer vision, including image recognition, object detection, and segmentation."
+  },
+  {
+    "id": "wiki-19",
+    "summary": "Continuous Integration (CI) is a development practice where developers integrate code into a shared repository frequently.",
+    "text": "Each integration is automatically verified by building the application and running tests, catching errors early. Popular CI tools include Jenkins, Travis CI, and GitHub Actions. By maintaining a clean build and test suite, teams can accelerate delivery and improve code quality."
+  },
+  {
+    "id": "wiki-20",
+    "summary": "TLS (Transport Layer Security) is a cryptographic protocol that secures communications over a computer network.",
+    "text": "TLS evolved from SSL and provides confidentiality, integrity, and authentication between clients and servers. It uses asymmetric cryptography for key exchange and symmetric encryption for data transfer. Commonly seen as HTTPS in web browsers, TLS underpins secure email, VPNs, and many other network services."
+  }
+]
