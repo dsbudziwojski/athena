@@ -17,7 +17,7 @@ def download_dump():
     
     Note:
         The currently used URL points to a small (~92.3 MB) sample split of the full Wikipedia 
-        dump to facilitate testing and development. For full-scale processing, replace the URL 
+        dump to facilitate tests and development. For full-scale processing, replace the URL
         with the complete dump URL (~22.3 GB).
     """
     # url = "https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2" # 22.3 GB

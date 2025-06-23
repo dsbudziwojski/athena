@@ -1,4 +1,4 @@
-from tokenizer import GeneralTokenizer
+from athena.tokenizer.tokenizer import GeneralTokenizer
 
 dummy_data = [
     (
@@ -49,7 +49,7 @@ dummy_data = [
     (
         "wiki-10",
         "VirtualBox is a free and open-source hypervisor for running guest operating systems on a host machine!",
-        "Developed by Oracle, it supports Windows, Linux, macOS, and Solaris hosts. Features include snapshotting, shared folders, virtual networking, and seamless mode. It’s popular for testing software across multiple OS environments without dedicated hardware."
+        "Developed by Oracle, it supports Windows, Linux, macOS, and Solaris hosts. Features include snapshotting, shared folders, virtual networking, and seamless mode. It’s popular for tests software across multiple OS environments without dedicated hardware."
     ),
 ]
 

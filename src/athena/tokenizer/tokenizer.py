@@ -2,7 +2,7 @@ from tokenizers import Tokenizer, normalizers, trainers
 from tokenizers.models import BPE
 from tokenizers.pre_tokenizers import Whitespace
 from tokenizers.normalizers import NFD, StripAccents
-from utilities import json_files_iter
+from athena.tokenizer.utilities import json_files_iter
 
 class GeneralTokenizer(object):
     """
