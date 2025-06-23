@@ -11,7 +11,7 @@ Athena is a specialized LLM trained primarily on Wikipedia’s high‑quality, s
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/your-org/athena.git
+   git clone https://github.com/dsbudziwojski/athena.git
    cd athena
    ```
 2. **Install Athena and its dependencies**
