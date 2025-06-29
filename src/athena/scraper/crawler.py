@@ -1,7 +1,8 @@
 import requests
-from bs4 import BeautifulSoup
+import mwparserfromhell
 import bz2
 import io
+import json
 import xml.etree.ElementTree as ET
 
 def download_dump():
@@ -25,47 +26,65 @@ def download_dump():
     response = requests.get(url, stream=True, timeout=(10, 120))
     return bz2.BZ2File(io.BytesIO(response.content))
 
-def crawl(dump, max_pages):
+def crawl(dump_object, max_pages):
     """
-    Parse a Wikipedia XML dump and extract the HTML content from a limited number of pages.
+    Parse a Wikipedia XML dump and extract cleaned plain-text content from a limited number of pages.
 
     Args:
-        dump (file-like object): A file-like object representing the decompressed Wikipedia XML dump.
-        max_pages (int): The maximum number of pages to process from the XML dump.
+        dump_object (file-like object): A decompressed file-like object of the Wikipedia XML dump.
+        max_pages (int): The maximum number of main namespace pages to extract and process.
+
+    Returns:
+        list of dict: A list where each dictionary represents a cleaned article with fields:
+                      - 'id' (str): The page ID.
+                      - 'title' (str): The article title.
+                      - 'text' (str): The plain-text content with MediaWiki syntax removed.
 
     Raises:
         xml.etree.ElementTree.ParseError: If the XML structure in the dump is malformed.
-        AttributeError: If expected tags (e.g., 'title', 'revision', 'text') are missing in the XML.
+        AttributeError: If expected tags (e.g., 'title', 'revision', 'text') are missing from a page element.
 
     Notes:
-        - The function uses a MediaWiki XML namespace map to locate relevant tags.
-        - The text content of each page's revision is parsed using BeautifulSoup with the 
-          'html.parser' backend for further processing.
-        - If no text is found in a page's revision, that page is skipped.
+        - Only pages in the main namespace ('<ns>0</ns>') are included.
+        - Redirect pages are skipped automatically based on the presence of a <redirect> tag.
+        - Wikitext is parsed and cleaned using 'mwparserfromhell', and whitespace is stripped.
+        - Cleaned articles are written to a file named 'dump_data.json' using UTF-8 encoding.
+        - Pages with no text content or only minimal markup are excluded from the output.
     """
-    tree = ET.parse(dump)
+    tree = ET.parse(dump_object)
     root = tree.getroot()
     page_count = 0
-
+    dump_data = []
     ns = {'mediawiki': 'http://www.mediawiki.org/xml/export-0.11/'}
+
     for page in root.findall("mediawiki:page", ns):
         if page_count >= max_pages:
             break
-        #print(page)
+        if page.find("mediawiki:redirect", ns) is not None or page.find("mediawiki:ns", ns).text != "0":
+            continue
+        id = page.find("mediawiki:id", ns).text
         title = page.find("mediawiki:title", ns).text
         text = page.find("mediawiki:revision", ns).find("mediawiki:text", ns).text
 
         if text:
-            content = BeautifulSoup(text, "html.parser")
-            #print(title)
-            #print(str(content))
-            print("Full HTML content:", content.prettify())
+            processed_text = mwparserfromhell.parse(text).strip_code().strip()
+            #print("\nPage Id: ", id, "\nPage Title: ", title, "\nPage Text: \n", processed_text)
+            dump_data.append({
+                "id": str(id),
+                "title": str(title),
+                "text": str(processed_text),
+            })
             page_count += 1
+    
+    with open('dump_data.json', 'w', encoding='utf-8') as f:
+        json.dump(dump_data, f, ensure_ascii=False, indent=4)
 
+    return dump_data
 
 def main():
-    dump = download_dump()
-    crawl(dump, 5)
+    dump_object = download_dump()
+    dump_data = crawl(dump_object, 25)
+    print(dump_data)
 
 if __name__ == "__main__":
     main()
