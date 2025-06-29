@@ -32,7 +32,7 @@ class GeneralTokenizer(object):
         if tokenizer_type not in ["default", "library"]:
             raise Exception("Invalid tokenizer")
         if model_type not in ["BPE"]:
-            raise Exception("Invalid model")
+            raise Exception("Invalid architecture")
 
         self._text_type = text_type
         self._tokenizer_type = tokenizer_type
