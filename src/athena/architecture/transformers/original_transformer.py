@@ -1,9 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
-import torch.utils.data as data
 import math
-import copy
 
 class MultiHeadAttention(nn.Module):
     """
@@ -247,7 +244,7 @@ class Transformer(nn.Module):
 
     def generate_mask(self, src, tgt):
         src_mask = (src != 0).unsqueeze(1).unsqueeze(2)
-        tgt_mask = (src != 0).unsqueeze(1).unsqueeze(3)
+        tgt_mask = (tgt != 0).unsqueeze(1).unsqueeze(3)
         seq_len = tgt.size(1)
         no_peak_mask = (1 - torch.triu(torch.ones(1, seq_len, seq_len), diagonal=1)).bool()
         tgt_mask = tgt_mask & no_peak_mask

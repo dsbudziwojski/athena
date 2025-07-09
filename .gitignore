@@ -13,3 +13,4 @@ dist/
 
 # Test data files
 dump_data.json
+transformer_model.pth
