@@ -1,3 +1,3 @@
-from .original_transformer import (Transformer, EncoderLayer, DecoderLayer)
+from .original_transformer import (MultiHeadAttention, PositionalEncoding, LearnablePositionalEncoding, PositionWiseFeedForward, EncoderLayer, DecoderLayer, Transformer)
 
-__all__ = ["Transformer", "EncoderLayer", "DecoderLayer"]
+__all__ = ["MultiHeadAttention", "PositionalEncoding", "LearnablePositionalEncoding", "PositionWiseFeedForward", "EncoderLayer", "DecoderLayer", "Transformer",]
