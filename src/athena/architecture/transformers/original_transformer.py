@@ -192,7 +192,19 @@ class PositionWiseFeedForward(nn.Module):
         return self.fc2(self.relu(self.fc1(x)))
 
 class EncoderLayer(nn.Module):
+    """
+    One layer of the Transformer encoder, combining self-attention and a feed-forward block.
+    """
     def __init__(self, dimensions_model, num_heads, dimensions_ff, dropout):
+        """
+        Initialize the encoder layer.
+
+        Args:
+            dimensions_model (int): Size of token embeddings and hidden states.
+            num_heads (int): Number of attention heads.
+            dimensions_ff (int): Inner dimension of the position-wise feed-forward network.
+            dropout (float): Dropout rate to apply after attention and feed-forward.
+        """
         super(EncoderLayer, self).__init__()
         self.self_attention = MultiHeadAttention(dimensions_model, num_heads)
         self.feed_forward = PositionWiseFeedForward(dimensions_model, dimensions_ff)
@@ -201,13 +213,35 @@ class EncoderLayer(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x, mask):
+        """
+        Apply one encoding step: self-attention → add & norm → feed-forward → add & norm.
+
+        Args:
+            x (Tensor): Input tensor of shape (batch_size, seq_length, dimensions_model).
+            mask (Tensor): Attention mask of shape (batch_size, 1, 1, seq_length) for padding.
+
+        Returns:
+            Tensor: Output tensor of same shape (batch_size, seq_length, dimensions_model).
+        """
         attention_output = self.self_attention(x, x, x, mask)
         x = self.norm1(x + self.dropout(attention_output))
         ff_output = self.feed_forward(x)
         return self.norm2(x + self.dropout(ff_output))
 
 class DecoderLayer(nn.Module):
+    """
+    One layer of the Transformer decoder, with self-attention, cross-attention, and feed-forward.
+    """
     def __init__(self, dimensions_model, num_heads, dimensions_ff, dropout):
+        """
+        Initialize the decoder layer.
+
+        Args:
+            dimensions_model (int): Size of token embeddings and hidden states.
+            num_heads (int): Number of attention heads.
+            dimensions_ff (int): Inner dimension of the position-wise feed-forward network.
+            dropout (float): Dropout rate to apply after attention and feed-forward.
+        """
         super(DecoderLayer, self).__init__()
         self.self_attention = MultiHeadAttention(dimensions_model, num_heads)
         self.cross_attention = MultiHeadAttention(dimensions_model, num_heads)
@@ -218,6 +252,21 @@ class DecoderLayer(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x, encoding_output, src_mask, tgt_mask):
+        """
+        Apply one decoding step:
+          1) Masked self-attention over previous tokens
+          2) Encoder–decoder cross-attention
+          3) Feed-forward
+
+        Args:
+            x (Tensor): Target embeddings, shape (batch_size, tgt_seq_len, dimensions_model).
+            encoding_output (Tensor): Encoder output, shape (batch_size, src_seq_len, dimensions_model).
+            src_mask (Tensor): Source padding mask, shape (batch_size, 1, 1, src_seq_len).
+            tgt_mask (Tensor): Target mask combining padding + no-peek, shape (batch_size, 1, tgt_seq_len, tgt_seq_len).
+
+        Returns:
+            Tensor: Updated target tensor of shape (batch_size, tgt_seq_len, dimensions_model).
+        """
         attention_output = self.self_attention(x, x, x, tgt_mask)
         x = self.norm1(x + self.dropout(attention_output))
         attention_output = self.cross_attention(x, encoding_output, encoding_output, src_mask)
@@ -226,7 +275,23 @@ class DecoderLayer(nn.Module):
         return self.norm3(x + self.dropout(ff_output))
 
 class Transformer(nn.Module):
+    """
+    Full sequence-to-sequence Transformer with embedding, positional encoding, encoder, decoder, and final projection.
+    """
     def __init__(self, src_vocab_size, tgt_vocab_size, dimensions_model, num_heads, num_layers, dimensions_ff, max_seq_len, dropout):
+        """
+        Initialize the Transformer model.
+
+        Args:
+            src_vocab_size (int): Size of the source vocabulary.
+            tgt_vocab_size (int): Size of the target vocabulary.
+            dimensions_model (int): Embedding & hidden dimension.
+            num_heads (int): Number of attention heads.
+            num_layers (int): Number of encoder and decoder layers.
+            dimensions_ff (int): Inner dimension of the feed-forward layers.
+            max_seq_len (int): Maximum supported sequence length.
+            dropout (float): Dropout rate applied to embeddings and sublayers.
+        """
         super(Transformer, self).__init__()
         self.encoder_embedding = nn.Embedding(src_vocab_size, dimensions_model)
         self.decoder_embedding = nn.Embedding(tgt_vocab_size, dimensions_model)
@@ -243,6 +308,18 @@ class Transformer(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def generate_mask(self, src, tgt):
+        """
+        Create padding masks for source and target, plus causal mask for target decoding.
+
+        Args:
+            src (Tensor): Source token IDs, shape (batch_size, src_seq_len).
+            tgt (Tensor): Target token IDs, shape (batch_size, tgt_seq_len).
+
+        Returns:
+            Tuple[Tensor, Tensor]:
+                src_mask: (batch_size, 1, 1, src_seq_len)
+                tgt_mask: (batch_size, 1, tgt_seq_len, tgt_seq_len)
+        """
         src_mask = (src != 0).unsqueeze(1).unsqueeze(2)
         tgt_mask = (tgt != 0).unsqueeze(1).unsqueeze(3)
         seq_len = tgt.size(1)
@@ -251,6 +328,16 @@ class Transformer(nn.Module):
         return src_mask, tgt_mask
 
     def forward(self, src, tgt):
+        """
+        Full forward pass through encoder and decoder, returning raw logits.
+
+        Args:
+            src (Tensor): Source token IDs, (batch_size, src_seq_len).
+            tgt (Tensor): Target token IDs, (batch_size, tgt_seq_len).
+
+        Returns:
+            Tensor: Vocabulary logits, shape (batch_size, tgt_seq_len, tgt_vocab_size).
+        """
         src_mask, tgt_mask = self.generate_mask(src, tgt)
         src_embedded = self.dropout(self.position_encoding(self.encoder_embedding(src)))
         tgt_embedded = self.dropout(self.position_encoding(self.decoder_embedding(tgt)))
