@@ -1,3 +1,3 @@
-from .crawler import crawl
+from .crawler import Scraper
 
-__all__ = ["crawl"]
+__all__ = ["Scraper"]
