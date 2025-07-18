@@ -41,6 +41,15 @@ class GeneralTokenizer(object):
         if tokenizer_type == "library":
             self.tokenizer = Tokenizer(BPE(unk_token="[UNK]"))
             self.tokenizer.pre_tokenizer = Whitespace()
+            self.tokenizer.enable_truncation(max_length=128)
+            self.tokenizer.enable_padding(
+                direction="right",
+                pad_id=0,
+                pad_type_id=0,
+                pad_token="[PAD]",
+                length=128,
+                pad_to_multiple_of=64
+            )
             if text_type == "list" or text_type == "files":
                 self._trainer = trainers.BpeTrainer(
                     vocab_size=30_000,
@@ -50,7 +59,7 @@ class GeneralTokenizer(object):
             else:
                 raise Exception("Invalid text_type")
 
-    def train_tokenizer(self, data):
+    def train_tokenizer(self, data, messages=False):
         """
         Train the tokenizer on provided data using the configured backend.
 
@@ -60,7 +69,8 @@ class GeneralTokenizer(object):
         Raises:
             Exception: If invalid text_type or non-library backend.
         """
-        print("TRAINING TOKENIZER STARTING")
+        if messages:
+            print("TRAINING TOKENIZER STARTING")
         if self._tokenizer_type == "library":
             if self._text_type == "list":
                 self.tokenizer.train_from_iterator(data, self._trainer)
@@ -70,7 +80,38 @@ class GeneralTokenizer(object):
                 raise Exception("Invalid text_type")
         else:
             raise Exception("Other Training Tokenizer Types Not Supported Yet")
-        print("TRAINING TOKENIZER COMPLETE")
+        if messages:
+            print("TRAINING TOKENIZER COMPLETE")
+
+    def encode(self, data, data_type="batch"):
+        if data_type == "batch":
+            if self._tokenizer_type == "library":
+                vectorized_data = self.tokenizer.encode_batch(data)
+                return [enc.ids for enc in vectorized_data]
+            else:
+                raise Exception("Other Tokenizer Types Not Supported Yet")
+        elif data_type == "list":
+            if self._tokenizer_type == "library":
+                vectorized_data = []
+                for record in data:
+                    output = self.tokenizer.encode(record)
+                    print(output.tokens)
+                    vectorized_data.append(list(output.ids))
+                return vectorized_data
+            else:
+                raise Exception("Other Tokenizer Types Not Supported Yet")
+        else:
+            raise Exception("Other data_type Not Supported Yet")
+
+    def get_vocab_size(self):
+        if self._tokenizer_type == "library":
+            return self.tokenizer.get_vocab_size()
+        else:
+            raise Exception("Other Tokenizer Types Not Supported Yet")
+
+    def decode(self, data):
+        print("TODO")
+
     def test_tokenizer(self, test_string):
         """
         Test encoding and decoding functionality of the trained tokenizer.
