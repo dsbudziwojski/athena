@@ -4,7 +4,7 @@ import torch.optim as optim
 from athena.architecture.transformers.original_transformer import Transformer as OG_Transformer
 from athena.tokenizer.tokenizer import GeneralTokenizer
 from athena.scraper import Scraper
-from utilities import src_trg_json_spliter
+from athena.architecture.utilities import src_trg_json_spliter
 
 # Model Evaluation & Visualization
 def evaluate_llm(visualize=True):
@@ -64,12 +64,12 @@ class AthenaLLM():
             if wikipedia_only:
                 self.scraper = Scraper(["https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles18.xml-p26716198p27121850.bz2"])
                 data_files = self.scraper.get_data_files()
-                self._src_data, self._trg_data = src_trg_json_spliter(data_files[0]) # write this into a file instead
+                self._src_data, self._trg_data = src_trg_json_spliter(data_files[0]) # write this into a file instead & maake this iterable over all dat in data files...
             else:
                 raise Exception("Invalid Data Request: currently not supported")
             print("SUCCESSFUL")
             print("    TRAINING TOKENIZER: ", end="")
-            self.tokenizer.train_tokenizer(["dump_data.json"]) # add data here... like this in the future: ["dump_data.json"]
+            self.tokenizer.train_tokenizer(data_files) # add data here... like this in the future: ["dump_data.json"]
             self.src_vocab_size = self.tgt_vocab_size = self.tokenizer.get_vocab_size()
             print("SUCCESSFUL")
         print("    TURNING SRC AND TGT INTO LISTS OF ENCODINGS: ", end="")

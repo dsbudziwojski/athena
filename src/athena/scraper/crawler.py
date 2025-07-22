@@ -4,8 +4,7 @@ import bz2
 import io
 import json
 import xml.etree.ElementTree as ET
-from pathlib import Path
-from utilities import get_data_path
+from .utilities import get_data_path
 
 class Scraper(object):
     """
