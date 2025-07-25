@@ -22,32 +22,9 @@ class Scraper(object):
         self.urls = urls
         self.data_files = []
         self.dump_objects = []
-        self.download_dumps()
         self.crawl(25)
 
-    def download_dumps(self):
-        """
-        Download and decompress Wikipedia XML dump files.
-
-        Downloads each file specified in self.urls as a BZ2-compressed file,
-        decompresses them into memory, and stores the resulting file-like objects
-        in self.dump_objects.
-
-        Raises:
-            requests.RequestException: If there is an error during download.
-
-        Note:
-            The currently used URL points to a small (~92.3 MB) sample split of the full Wikipedia
-            dump to facilitate tests and development. For full-scale processing, replace the URL
-            with the complete dump URL (~22.3 GB).
-        """
-        # url = "https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2" # 22.3 GB
-        # url = "https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles18.xml-p26716198p27121850.bz2" # 92.3 MB
-        for url in self.urls:
-            response = requests.get(url, stream=True, timeout=(10, 120))
-            self.dump_objects.append(bz2.BZ2File(io.BytesIO(response.content)))
-
-    def crawl(self, max_pages=1):
+    def crawl(self, max_pages=1, dump_objects=None):
         """
         Extract plain-text content from a limited number of Wikipedia pages.
 
@@ -57,7 +34,9 @@ class Scraper(object):
 
         Args:
             max_pages (int): Maximum number of pages to process per dump file.
+            dump_objects (list of bz2.BZ2File): List of decompressed dump file objects.
         Raises:
+            requests.RequestException: If there is an error during download.
             xml.etree.ElementTree.ParseError: If the XML structure in the dump is malformed.
             AttributeError: If expected tags (e.g., 'title', 'revision', 'text') are missing from a page element.
 
@@ -68,6 +47,14 @@ class Scraper(object):
             - Cleaned articles are written to a file named 'dump_data.json' using UTF-8 encoding.
             - Pages with no text content or only minimal markup are excluded from the output.
         """
+        if dump_objects is None:
+            # url = "https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2" # 22.3 GB
+            # url = "https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles18.xml-p26716198p27121850.bz2" # 92.3 MB
+            for url in self.urls:
+                response = requests.get(url, stream=True, timeout=(10, 120))
+                self.dump_objects.append(bz2.BZ2File(io.BytesIO(response.content)))
+        else:
+            self.dump_objects = dump_objects
 
         i = 0
         for dump_object in self.dump_objects:
@@ -118,12 +105,3 @@ class Scraper(object):
             list of str: Paths to JSON files containing processed article data.
         """
         return self.data_files
-
-
-def main():
-    s = Scraper(["https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles18.xml-p26716198p27121850.bz2"])
-    print(s.get_dump_objects())
-    print(s.get_data_files())
-
-if __name__ == "__main__":
-    main()
